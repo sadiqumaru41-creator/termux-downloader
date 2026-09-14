@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ummi's Sanctuary 🌸</title>
+    <style>
+        body {
+            background-color: #efeae2;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            background: #ffeef2;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            height: 100vh;
+        }
+        .chat-header {
+            background: #075e54;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .chat-header h3 { margin: 0; font-size: 18px; }
+        .chat-header span { font-size: 12px; color: #dcf8c6; }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .message.user {
+            background: #dcf8c6;
+            align-self: flex-end;
+        }
+        .message.ai {
+            background: #ffffff;
+            align-self: flex-start;
+        }
+        .chat-input-area {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+        }
+        .chat-input-area button {
+            background: #075e54;
+            color: white;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .mic-btn { background: #d63384 !important; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div>
+                <h3>Ummi's Safe Haven 💖</h3>
+                <span>Online & here for you</span>
+            </div>
+            <div>✨🌸</div>
+        </div>
+        <div class="chat-messages" id="messageList">
+            {% for m in messages %}
+                <div class="message {{ m.sender }}">{{ m.message }}</div>
+            {% endfor %}
+        </div>
+        <div class="chat-input-area">
+            <button class="mic-btn" id="micBtn" title="Voice Input">🎤</button>
+            <input type="text" id="messageInput" placeholder="Type a message or share your thoughts..." autocomplete="off">
+            <button id="sendBtn">➤</button>
+        </div>
+    </div>
+    <script>
+        const messageList = document.getElementById('messageList');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const micBtn = document.getElementById('micBtn');
+
+        messageList.scrollTop = messageList.scrollHeight;
+
+        function appendMessage(sender, text) {
+            const div = document.createElement('div');
+            div.classList.add('message', sender);
+            div.textContent = text;
+            messageList.appendChild(div);
+            messageList.scrollTop = messageList.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+            appendMessage('user', text);
+            messageInput.value = '';
+
+            try {
+                const response = await fetch('/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'message=' + encodeURIComponent(text)
+                });
+                const data = await response.json();
+                if (data.reply) {
+                    appendMessage('ai', data.reply);
+                    playGentleAudio(data.reply);
+                } else {
+                    appendMessage('ai', "I'm right here with you, Ummi.");
+                }
+            } catch (err) {
+                appendMessage('ai', "My connection flickered, but my heart is right here with you.");
+            }
+        }
+
+        function playGentleAudio(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.85; 
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+
+            micBtn.addEventListener('click', () => {
+                micBtn.style.background = '#ff4d6d';
+                recognition.start();
+            });
+
+            recognition.onresult = (event) => {
+                messageInput.value = event.results[0][0].transcript;
+                micBtn.style.background = '#d63384';
+                sendMessage();
+            };
+
+            recognition.onerror = recognition.onend = () => {
+                micBtn.style.background = '#d63384';
+            };
+        } else {
+            micBtn.style.display = 'none';
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Ummi ✨</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+        .floating-heart {
+            position: absolute;
+            bottom: -50px;
+            font-size: 24px;
+            animation: rise 6s infinite ease-in;
+            opacity: 0.7;
+        }
+        @keyframes rise {
+            0% { transform: translateY(0) scale(1); opacity: 0.8; }
+            100% { transform: translateY(-105vh) scale(1.5); opacity: 0; }
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 320px;
+            z-index: 10;
+        }
+        h2 { color: #d63384; margin-bottom: 10px; }
+        p { color: #6c757d; font-size: 14px; margin-bottom: 25px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffb3c6;
+            border-radius: 10px;
+            outline: none;
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        input:focus { border-color: #d63384; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #d63384;
+            border: none;
+            color: white;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { background: #b02a6b; }
+        .error { color: #dc3545; font-size: 13px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <script>
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('floating-heart');
+            heart.innerHTML = ['❤️', '💖', '✨', '🌸', '💕'][Math.floor(Math.random() * 5)];
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = (Math.random() * 3 + 3) + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 6000);
+        }
+        setInterval(createHeart, 400);
+    </script>
+    <div class="login-card">
+        <h2>Welcome, Ummi 💖</h2>
+        <p>Enter your name to unlock your safe space</p>
+        <form action="/auth" method="POST">
+            <input type="text" name="name" placeholder="Type your name..." required autocomplete="off">
+            <button type="submit">Open Heart ✨</button>
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+        </form>
+    </div>
+</body>
+</html>
+
